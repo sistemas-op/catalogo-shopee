@@ -5,7 +5,9 @@
 const { shopeeQuery } = require('./_shopee');
 
 module.exports = async (req, res) => {
-  const termo = req.query.termo || '';
+  // A Shopee só respeita "sortType" quando existe keyword de busca.
+  // Sem termo digitado, usamos uma palavra-chave ampla como padrão.
+  const termo = req.query.termo || 'promoção';
   const comissaoMin = Number(req.query.comissaoMin || 0); // em %
   const sortType = Number(req.query.sortType || 5);
 
