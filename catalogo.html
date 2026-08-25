@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Achadão Sorte — Catálogo</title>
+<style>
+  :root {
+    --pink: #EE4D2D;
+    --pink-dark: #d8431f;
+    --bg: #f7f7f8;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    background: linear-gradient(135deg, var(--pink), #ff8a3d);
+    padding: 28px 20px 20px;
+    color: white;
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0 0 16px; opacity: 0.9; font-size: 14px; }
+  .search-row { display: flex; gap: 8px; }
+  #busca {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: none;
+    font-size: 15px;
+  }
+  #btnBuscar {
+    background: white;
+    color: var(--pink);
+    border: none;
