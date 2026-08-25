@@ -10,9 +10,7 @@ module.exports = async (req, res) => {
       nodes {
         offerName
         offerLink
-        startTime
-        endTime
-        categoryName
+        categoryId
       }
     }
   }`;
