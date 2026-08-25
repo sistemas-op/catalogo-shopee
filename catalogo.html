@@ -12,6 +12,7 @@
     --card-bg: #ffffff;
     --text: #1a1a1a;
     --muted: #6b6b6b;
+    --gold: #f0a500;
   }
   * { box-sizing: border-box; }
   body {
@@ -44,11 +45,35 @@
     font-weight: 600;
     cursor: pointer;
   }
+  .categorias {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .cat-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .cat-btn:hover { background: rgba(255,255,255,0.35); }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px 0;
+    flex-wrap: wrap;
+  }
   .tabs {
     display: flex;
     gap: 6px;
-    padding: 14px 20px 0;
     overflow-x: auto;
+    flex: 1;
   }
   .tab {
     background: var(--card-bg);
@@ -65,6 +90,22 @@
     color: white;
     border-color: var(--pink);
   }
+  .comissao-filter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .comissao-filter input {
+    width: 55px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+  }
+
   #status {
     padding: 10px 20px;
     font-size: 13px;
@@ -77,16 +118,17 @@
     padding: 14px 20px 40px;
   }
   .card {
+    position: relative;
     background: var(--card-bg);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
-    cursor: pointer;
     transition: transform 0.1s ease;
   }
   .card:hover { transform: translateY(-2px); }
+  .card a.card-link { text-decoration: none; color: inherit; display: contents; }
   .card img {
     width: 100%;
     aspect-ratio: 1;
@@ -115,6 +157,16 @@
     border-radius: 6px;
     width: fit-content;
   }
+  .score-badge {
+    display: inline-block;
+    background: #fff7e0;
+    color: #a5720a;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    width: fit-content;
+  }
   .meta-row {
     display: flex;
     justify-content: space-between;
@@ -122,6 +174,36 @@
     color: var(--muted);
     margin-top: 2px;
   }
+  .fav-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255,255,255,0.9);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .fav-btn.active { color: var(--gold); }
+
+  .campanha-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .campanha-card h3 { margin: 0 0 6px; font-size: 15px; }
+  .campanha-card .meta-row { margin-top: 8px; }
+
   .empty, .error {
     padding: 40px 20px;
     text-align: center;
@@ -141,24 +223,41 @@
     <input id="busca" type="text" placeholder="Buscar produto (ex: fone bluetooth)">
     <button id="btnBuscar">Buscar</button>
   </div>
+  <div class="categorias">
+    <button class="cat-btn" data-cat="casa">🏠 Casa</button>
+    <button class="cat-btn" data-cat="beleza">💄 Beleza</button>
+    <button class="cat-btn" data-cat="pet">🐾 Pet</button>
+    <button class="cat-btn" data-cat="eletronicos">🔌 Eletrônicos</button>
+    <button class="cat-btn" data-cat="cozinha">🍳 Cozinha</button>
+    <button class="cat-btn" data-cat="fitness">🏋️ Fitness</button>
+  </div>
 </header>
 
-<div class="tabs">
-  <div class="tab active" data-sort="5">Maior comissão</div>
-  <div class="tab" data-sort="2">Mais vendidos</div>
-  <div class="tab" data-sort="1">Relevância</div>
-  <div class="tab" data-sort="4">Menor preço</div>
-  <div class="tab" data-sort="3">Maior preço</div>
+<div class="toolbar">
+  <div class="tabs">
+    <div class="tab active" data-mode="sort" data-sort="5">Maior comissão</div>
+    <div class="tab" data-mode="sort" data-sort="2">Mais vendidos</div>
+    <div class="tab" data-mode="sort" data-sort="1">Relevância</div>
+    <div class="tab" data-mode="sort" data-sort="4">Menor preço</div>
+    <div class="tab" data-mode="sort" data-sort="3">Maior preço</div>
+    <div class="tab" data-mode="doce">🔥 Ponto doce</div>
+    <div class="tab" data-mode="promo">🎯 Promoções ativas</div>
+    <div class="tab" data-mode="fav">⭐ Favoritos</div>
+  </div>
+  <div class="comissao-filter">
+    Comissão mín.
+    <input id="comissaoMin" type="number" min="0" max="100" placeholder="0" value="0">%
+  </div>
 </div>
 
 <div id="status"></div>
 <div class="grid" id="grid"></div>
 
 <script>
-  // Troque pela URL do seu projeto na Vercel, ex:
-  // const API_BASE = "https://shopee-afiliados.vercel.app";
-  const API_BASE = ""; // vazio = mesmo domínio do deploy
+  const API_BASE = "";
+  const FAV_KEY = "achadao_favoritos";
 
+  let mode = "sort";   // 'sort' | 'doce' | 'promo' | 'fav'
   let sortType = 5;
   let termo = "";
 
@@ -166,8 +265,30 @@
   const status = document.getElementById('status');
   const inputBusca = document.getElementById('busca');
   const btnBuscar = document.getElementById('btnBuscar');
+  const inputComissao = document.getElementById('comissaoMin');
   const tabs = document.querySelectorAll('.tab');
+  const catBtns = document.querySelectorAll('.cat-btn');
 
+  // ---------- Favoritos (localStorage) ----------
+  function getFavoritos() {
+    try { return JSON.parse(localStorage.getItem(FAV_KEY) || '{}'); }
+    catch { return {}; }
+  }
+  function salvarFavoritos(favs) {
+    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  }
+  function toggleFavorito(produto) {
+    const favs = getFavoritos();
+    if (favs[produto.itemId]) {
+      delete favs[produto.itemId];
+    } else {
+      favs[produto.itemId] = produto;
+    }
+    salvarFavoritos(favs);
+    if (mode === 'fav') buscar();
+  }
+
+  // ---------- Helpers ----------
   function formatarPreco(min, max) {
     const fmt = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     if (!min) return '';
@@ -187,6 +308,44 @@
     `).join('');
   }
 
+  function cardProdutoHTML(p, extraBadge) {
+    const favs = getFavoritos();
+    const isFav = !!favs[p.itemId];
+    const comissaoPct = (Number(p.commissionRate) * 100).toFixed(1);
+    const preco = formatarPreco(p.priceMin, p.priceMax);
+    const vendas = p.sales ? `${p.sales} vendidos` : '';
+    const comissaoValor = p.commission ? Number(p.commission).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+    return `
+      <div class="card" data-id="${p.itemId}">
+        <button class="fav-btn ${isFav ? 'active' : ''}" data-fav="${p.itemId}">${isFav ? '★' : '☆'}</button>
+        <a class="card-link" href="${p.offerLink || p.productLink}" target="_blank" rel="noopener">
+          <img src="${p.imageUrl}" alt="" loading="lazy">
+          <div class="card-body">
+            <div class="card-name">${p.productName}</div>
+            <div class="price-row"><span class="price">${preco}</span></div>
+            <span class="commission-badge">${comissaoPct}% comissão ${comissaoValor ? '· ' + comissaoValor : ''}</span>
+            ${extraBadge || ''}
+            <div class="meta-row"><span>${vendas}</span></div>
+          </div>
+        </a>
+      </div>
+    `;
+  }
+
+  function attachFavHandlers(produtosById) {
+    grid.querySelectorAll('[data-fav]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.dataset.fav;
+        toggleFavorito(produtosById[id]);
+        btn.classList.toggle('active');
+        btn.textContent = btn.classList.contains('active') ? '★' : '☆';
+      });
+    });
+  }
+
+  // ---------- Renderers ----------
   function renderProdutos(produtos) {
     if (!produtos.length) {
       grid.innerHTML = '';
@@ -194,45 +353,123 @@
       return;
     }
     status.textContent = `${produtos.length} produtos encontrados`;
-    grid.innerHTML = produtos.map((p) => {
-      const comissaoPct = (Number(p.commissionRate) * 100).toFixed(1);
-      const preco = formatarPreco(p.priceMin, p.priceMax);
-      const vendas = p.sales ? `${p.sales} vendidos` : '';
-      const comissaoValor = p.commission ? Number(p.commission).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
-      return `
-        <a class="card" href="${p.offerLink || p.productLink}" target="_blank" rel="noopener">
-          <img src="${p.imageUrl}" alt="" loading="lazy">
-          <div class="card-body">
-            <div class="card-name">${p.productName}</div>
-            <div class="price-row"><span class="price">${preco}</span></div>
-            <span class="commission-badge">${comissaoPct}% comissão ${comissaoValor ? '· ' + comissaoValor : ''}</span>
-            <div class="meta-row"><span>${vendas}</span></div>
-          </div>
-        </a>
-      `;
-    }).join('');
+    const byId = {};
+    produtos.forEach((p) => byId[p.itemId] = p);
+    grid.innerHTML = produtos.map((p) => cardProdutoHTML(p)).join('');
+    attachFavHandlers(byId);
   }
 
+  function renderPontoDoce(produtos) {
+    // Score = vendas * comissão(%) — tenta achar equilíbrio entre "vende bem" e "paga bem"
+    const comQuantidade = produtos.filter((p) => p.sales > 0);
+    const pool = comQuantidade.length ? comQuantidade : produtos;
+    const comScore = pool.map((p) => ({
+      ...p,
+      _score: (Number(p.sales) || 0) * (Number(p.commissionRate) || 0),
+    }));
+    comScore.sort((a, b) => b._score - a._score);
+
+    if (!comScore.length) {
+      grid.innerHTML = '';
+      status.innerHTML = '<div class="empty">Nenhum produto encontrado.</div>';
+      return;
+    }
+    status.textContent = `${comScore.length} produtos — equilíbrio vendas × comissão`;
+    const byId = {};
+    comScore.forEach((p) => byId[p.itemId] = p);
+    grid.innerHTML = comScore.map((p) =>
+      cardProdutoHTML(p, `<span class="score-badge">⚖️ pontuação ${p._score.toFixed(1)}</span>`)
+    ).join('');
+    attachFavHandlers(byId);
+  }
+
+  function renderCampanhas(campanhas) {
+    if (!campanhas.length) {
+      grid.innerHTML = '';
+      status.innerHTML = '<div class="empty">Nenhuma campanha ativa no momento.</div>';
+      return;
+    }
+    status.textContent = `${campanhas.length} campanhas ativas`;
+    grid.innerHTML = campanhas.map((c) => `
+      <a class="campanha-card" href="${c.offerLink}" target="_blank" rel="noopener">
+        <h3>🎯 ${c.offerName}</h3>
+        <div class="meta-row">
+          <span>${c.categoryName || ''}</span>
+          <span>${c.endTime ? 'até ' + c.endTime : ''}</span>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  function renderFavoritos() {
+    const favs = getFavoritos();
+    const lista = Object.values(favs);
+    if (!lista.length) {
+      grid.innerHTML = '';
+      status.innerHTML = '<div class="empty">Você ainda não favoritou nenhum produto. Clica na ⭐ de um card pra salvar aqui.</div>';
+      return;
+    }
+    status.textContent = `${lista.length} produtos favoritados`;
+    const byId = {};
+    lista.forEach((p) => byId[p.itemId] = p);
+    grid.innerHTML = lista.map((p) => cardProdutoHTML(p)).join('');
+    attachFavHandlers(byId);
+  }
+
+  // ---------- Buscar (roteador principal) ----------
   async function buscar() {
+    if (mode === 'fav') {
+      renderFavoritos();
+      return;
+    }
+
     renderSkeleton();
     status.textContent = 'Carregando...';
+    const comissaoMin = Number(inputComissao.value || 0);
+
     try {
-      const url = `${API_BASE}/api/produtos?termo=${encodeURIComponent(termo)}&sortType=${sortType}`;
+      if (mode === 'promo') {
+        const res = await fetch(`${API_BASE}/api/campanhas`);
+        const data = await res.json();
+        if (!data.sucesso) throw new Error(data.erro || 'Erro desconhecido');
+        renderCampanhas(data.campanhas);
+        return;
+      }
+
+      // mode === 'sort' ou 'doce' — ambos usam /api/produtos
+      const sortParaBusca = mode === 'doce' ? 2 : sortType; // base "mais vendidos" pra montar o pool do ponto doce
+      const url = `${API_BASE}/api/produtos?termo=${encodeURIComponent(termo)}&sortType=${sortParaBusca}&comissaoMin=${comissaoMin}`;
       const res = await fetch(url);
       const data = await res.json();
       if (!data.sucesso) throw new Error(data.erro || 'Erro desconhecido');
-      renderProdutos(data.produtos);
+
+      if (mode === 'doce') {
+        renderPontoDoce(data.produtos);
+      } else {
+        renderProdutos(data.produtos);
+      }
     } catch (err) {
       grid.innerHTML = '';
-      status.innerHTML = `<div class="error">Erro ao buscar produtos: ${err.message}</div>`;
+      status.innerHTML = `<div class="error">Erro ao buscar: ${err.message}</div>`;
     }
   }
 
+  // ---------- Eventos ----------
   tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
       tabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
-      sortType = Number(tab.dataset.sort);
+      mode = tab.dataset.mode;
+      if (mode === 'sort') sortType = Number(tab.dataset.sort);
+      buscar();
+    });
+  });
+
+  catBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      inputBusca.value = btn.textContent.trim();
+      termo = btn.dataset.cat;
+      inputBusca.value = termo;
       buscar();
     });
   });
@@ -244,6 +481,7 @@
   inputBusca.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { termo = inputBusca.value.trim(); buscar(); }
   });
+  inputComissao.addEventListener('change', buscar);
 
   buscar();
 </script>
