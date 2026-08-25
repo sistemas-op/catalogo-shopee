@@ -39,3 +39,214 @@
     background: white;
     color: var(--pink);
     border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 14px 20px 0;
+    overflow-x: auto;
+  }
+  .tab {
+    background: var(--card-bg);
+    border: 1px solid #e5e5e5;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+  .tab.active {
+    background: var(--pink);
+    color: white;
+    border-color: var(--pink);
+  }
+  #status {
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    padding: 14px 20px 40px;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  .card:hover { transform: translateY(-2px); }
+  .card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: #eee;
+  }
+  .card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .card-name {
+    font-size: 13px;
+    line-height: 1.35;
+    height: 2.7em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .price-row { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
+  .price { color: var(--pink); font-weight: 700; font-size: 16px; }
+  .commission-badge {
+    display: inline-block;
+    background: #fff1ee;
+    color: var(--pink-dark);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    width: fit-content;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .empty, .error {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .error { color: var(--pink-dark); }
+  .skeleton { background: #eee; animation: pulse 1.2s infinite ease-in-out; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛍️ Achadão Sorte</h1>
+  <p>Catálogo de produtos Shopee — comissões em tempo real</p>
+  <div class="search-row">
+    <input id="busca" type="text" placeholder="Buscar produto (ex: fone bluetooth)">
+    <button id="btnBuscar">Buscar</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-sort="5">Maior comissão</div>
+  <div class="tab" data-sort="2">Mais vendidos</div>
+  <div class="tab" data-sort="1">Relevância</div>
+  <div class="tab" data-sort="4">Menor preço</div>
+  <div class="tab" data-sort="3">Maior preço</div>
+</div>
+
+<div id="status"></div>
+<div class="grid" id="grid"></div>
+
+<script>
+  // Troque pela URL do seu projeto na Vercel, ex:
+  // const API_BASE = "https://shopee-afiliados.vercel.app";
+  const API_BASE = ""; // vazio = mesmo domínio do deploy
+
+  let sortType = 5;
+  let termo = "";
+
+  const grid = document.getElementById('grid');
+  const status = document.getElementById('status');
+  const inputBusca = document.getElementById('busca');
+  const btnBuscar = document.getElementById('btnBuscar');
+  const tabs = document.querySelectorAll('.tab');
+
+  function formatarPreco(min, max) {
+    const fmt = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    if (!min) return '';
+    if (max && max !== min) return `${fmt(min)} - ${fmt(max)}`;
+    return fmt(min);
+  }
+
+  function renderSkeleton() {
+    grid.innerHTML = Array.from({ length: 8 }).map(() => `
+      <div class="card">
+        <div class="skeleton" style="aspect-ratio:1"></div>
+        <div class="card-body">
+          <div class="skeleton" style="height:14px;border-radius:4px"></div>
+          <div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderProdutos(produtos) {
+    if (!produtos.length) {
+      grid.innerHTML = '';
+      status.innerHTML = '<div class="empty">Nenhum produto encontrado.</div>';
+      return;
+    }
+    status.textContent = `${produtos.length} produtos encontrados`;
+    grid.innerHTML = produtos.map((p) => {
+      const comissaoPct = (Number(p.commissionRate) * 100).toFixed(1);
+      const preco = formatarPreco(p.priceMin, p.priceMax);
+      const vendas = p.sales ? `${p.sales} vendidos` : '';
+      const comissaoValor = p.commission ? Number(p.commission).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+      return `
+        <a class="card" href="${p.offerLink || p.productLink}" target="_blank" rel="noopener">
+          <img src="${p.imageUrl}" alt="" loading="lazy">
+          <div class="card-body">
+            <div class="card-name">${p.productName}</div>
+            <div class="price-row"><span class="price">${preco}</span></div>
+            <span class="commission-badge">${comissaoPct}% comissão ${comissaoValor ? '· ' + comissaoValor : ''}</span>
+            <div class="meta-row"><span>${vendas}</span></div>
+          </div>
+        </a>
+      `;
+    }).join('');
+  }
+
+  async function buscar() {
+    renderSkeleton();
+    status.textContent = 'Carregando...';
+    try {
+      const url = `${API_BASE}/api/produtos?termo=${encodeURIComponent(termo)}&sortType=${sortType}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data.sucesso) throw new Error(data.erro || 'Erro desconhecido');
+      renderProdutos(data.produtos);
+    } catch (err) {
+      grid.innerHTML = '';
+      status.innerHTML = `<div class="error">Erro ao buscar produtos: ${err.message}</div>`;
+    }
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      sortType = Number(tab.dataset.sort);
+      buscar();
+    });
+  });
+
+  btnBuscar.addEventListener('click', () => {
+    termo = inputBusca.value.trim();
+    buscar();
+  });
+  inputBusca.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { termo = inputBusca.value.trim(); buscar(); }
+  });
+
+  buscar();
+</script>
+
+</body>
+</html>
