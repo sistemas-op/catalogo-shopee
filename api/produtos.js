@@ -1,3 +1,4 @@
+// /api/produtos.js
 // Uso: /api/produtos?termo=fone+bluetooth&comissaoMin=10&sortType=5
 // sortType: 1=Relevância 2=Mais vendidos 3=Maior preço 4=Menor preço 5=Maior comissão
 
@@ -13,3 +14,27 @@ module.exports = async (req, res) => {
       nodes {
         itemId
         productName
+        price
+        commissionRate
+        commission
+        sales
+        productLink
+        offerLink
+        imageUrl
+      }
+    }
+  }`;
+
+  try {
+    const data = await shopeeQuery(query, { keyword: termo, sortType, page: 0, limit: 20 });
+    let produtos = data.productOfferV2.nodes;
+
+    if (comissaoMin > 0) {
+      produtos = produtos.filter((p) => Number(p.commissionRate) * 100 >= comissaoMin);
+    }
+
+    res.status(200).json({ sucesso: true, total: produtos.length, produtos });
+  } catch (err) {
+    res.status(500).json({ sucesso: false, erro: err.message, detalhes: err.details });
+  }
+};
