@@ -393,10 +393,6 @@
     grid.innerHTML = campanhas.map((c) => `
       <a class="campanha-card" href="${c.offerLink}" target="_blank" rel="noopener">
         <h3>🎯 ${c.offerName}</h3>
-        <div class="meta-row">
-          <span>${c.categoryName || ''}</span>
-          <span>${c.endTime ? 'até ' + c.endTime : ''}</span>
-        </div>
       </a>
     `).join('');
   }
