@@ -37,8 +37,8 @@ module.exports = async (req, res) => {
 
   try {
     const data = await shopeeQuery(query, {
-      start: toUnix(inicioData),
-      end: toUnix(fimData),
+      start: String(toUnix(inicioData)),
+      end: String(toUnix(fimData)),
       limit: 50,
     });
 
