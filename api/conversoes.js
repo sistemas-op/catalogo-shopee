@@ -6,12 +6,12 @@ const { shopeeQuery } = require('./_shopee');
 
 module.exports = async (req, res) => {
   const dias = Number(req.query.dias || 7);
-  const fim = new Date();
-  const inicio = new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
-  const fmt = (d) => d.toISOString().slice(0, 10);
+  const fimData = new Date();
+  const inicioData = new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
+  const toUnix = (d) => Math.floor(d.getTime() / 1000);
 
-  const query = `query Conversoes($start:String,$end:String,$page:Int,$limit:Int){
-    conversionReport(purchaseTimeStart:$start, purchaseTimeEnd:$end, page:$page, limit:$limit) {
+  const query = `query Conversoes($start:Int64,$end:Int64,$limit:Int){
+    conversionReport(purchaseTimeStart:$start, purchaseTimeEnd:$end, limit:$limit) {
       nodes {
         orderId
         itemName
@@ -25,12 +25,11 @@ module.exports = async (req, res) => {
 
   try {
     const data = await shopeeQuery(query, {
-      start: fmt(inicio),
-      end: fmt(fim),
-      page: 0,
+      start: toUnix(inicioData),
+      end: toUnix(fimData),
       limit: 50,
     });
-    res.status(200).json({ sucesso: true, periodo: `${fmt(inicio)} a ${fmt(fim)}`, vendas: data.conversionReport.nodes });
+    res.status(200).json({ sucesso: true, periodo: `${dias} dias`, vendas: data.conversionReport.nodes });
   } catch (err) {
     res.status(500).json({ sucesso: false, erro: err.message, detalhes: err.details });
   }
