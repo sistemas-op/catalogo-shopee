@@ -156,8 +156,8 @@
 
   function renderResumo(vendas) {
     const total = vendas.length;
-    const totalComissao = vendas.reduce((s, v) => s + Number(v.commission || 0), 0);
-    const pagos = vendas.filter((v) => statusClasse(v.commissionStatus) === 'status-pago').length;
+    const totalComissao = vendas.reduce((s, v) => s + Number(v.itemTotalCommission || v.itemCommission || 0), 0);
+    const pagos = vendas.filter((v) => statusClasse(v.conversionStatus) === 'status-pago').length;
 
     resumo.innerHTML = `
       <div class="resumo-card">
@@ -185,10 +185,10 @@
     status.textContent = '';
     tbody.innerHTML = vendas.map((v) => `
       <tr>
-        <td>${formatarData(v.purchaseTime)}</td>
-        <td>${v.itemName || '—'}</td>
-        <td>${formatarMoeda(v.commission)}</td>
-        <td><span class="status-badge ${statusClasse(v.commissionStatus)}">${v.commissionStatus || '—'}</span></td>
+        <td>${formatarData(v.purchaseTime * 1000)}</td>
+        <td>${v.itemName || '—'} ${v.qty > 1 ? '(x' + v.qty + ')' : ''}</td>
+        <td>${formatarMoeda(v.itemTotalCommission || v.itemCommission)}</td>
+        <td><span class="status-badge ${statusClasse(v.conversionStatus)}">${v.conversionStatus || '—'}</span></td>
         <td>${v.orderId || '—'}</td>
       </tr>
     `).join('');
