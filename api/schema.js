@@ -1,34 +1,35 @@
 // /api/schema.js
-// TEMPORÁRIO — descobre o tipo EXATO de cada argumento aceito por conversionReport.
-// Depois de resolver o painel de vendas, pode apagar este arquivo.
+// TEMPORÁRIO — testa várias combinações de formato para purchaseTimeStart/End
+// e reporta qual delas a Shopee aceita. Depois de resolver, pode apagar este arquivo.
 // Uso: acesse /api/schema no navegador (GET simples, sem parâmetros).
 
 const { shopeeQuery } = require('./_shopee');
 
-module.exports = async (req, res) => {
-  const query = `query IntrospectArgs {
-    __schema {
-      queryType {
-        fields {
-          name
-          args {
-            name
-            type {
-              kind
-              name
-              ofType { kind name ofType { kind name } }
-            }
-          }
-        }
-      }
-    }
-  }`;
+const agora = Date.now();
+const seteDiasMs = 7 * 24 * 60 * 60 * 1000;
 
-  try {
-    const data = await shopeeQuery(query, {});
-    const campo = data.__schema.queryType.fields.find((f) => f.name === 'conversionReport');
-    res.status(200).json({ sucesso: true, argumentosDeConversionReport: campo });
-  } catch (err) {
-    res.status(500).json({ sucesso: false, erro: err.message, detalhes: err.details });
+const candidatos = [
+  { nome: 'segundos como number',      start: Math.floor((agora - seteDiasMs) / 1000),           end: Math.floor(agora / 1000) },
+  { nome: 'segundos como string',      start: String(Math.floor((agora - seteDiasMs) / 1000)),   end: String(Math.floor(agora / 1000)) },
+  { nome: 'milissegundos como number', start: agora - seteDiasMs,                                 end: agora },
+  { nome: 'milissegundos como string', start: String(agora - seteDiasMs),                         end: String(agora) },
+];
+
+const query = `query Conversoes($start:Int64,$end:Int64,$limit:Int){
+  conversionReport(purchaseTimeStart:$start, purchaseTimeEnd:$end, limit:$limit) {
+    nodes { purchaseTime conversionStatus totalCommission }
   }
+}`;
+
+module.exports = async (req, res) => {
+  const resultados = [];
+  for (const c of candidatos) {
+    try {
+      const data = await shopeeQuery(query, { start: c.start, end: c.end, limit: 5 });
+      resultados.push({ formato: c.nome, sucesso: true, totalEncontrado: data.conversionReport.nodes.length });
+    } catch (err) {
+      resultados.push({ formato: c.nome, sucesso: false, erro: err.message, detalhes: err.details });
+    }
+  }
+  res.status(200).json({ resultados });
 };
