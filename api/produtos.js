@@ -16,10 +16,13 @@ module.exports = async (req, res) => {
       nodes {
         itemId
         productName
-        price
+        priceMin
+        priceMax
         commissionRate
         commission
         sales
+        periodStartTime
+        periodEndTime
         productLink
         offerLink
         imageUrl
