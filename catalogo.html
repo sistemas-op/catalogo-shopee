@@ -434,8 +434,8 @@
 
       // mode === 'sort' ou 'doce' — ambos usam /api/produtos
       const sortParaBusca = mode === 'doce' ? 2 : sortType; // base "mais vendidos" pra montar o pool do ponto doce
-      const url = `${API_BASE}/api/produtos?termo=${encodeURIComponent(termo)}&sortType=${sortParaBusca}&comissaoMin=${comissaoMin}`;
-      const res = await fetch(url);
+      const url = `${API_BASE}/api/produtos?termo=${encodeURIComponent(termo)}&sortType=${sortParaBusca}&comissaoMin=${comissaoMin}&_t=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
       if (!data.sucesso) throw new Error(data.erro || 'Erro desconhecido');
 
